@@ -1,41 +1,38 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
-import { PrismaClient } from '@prisma/client'
+import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-     constructor() {
-          super({
-               log: process.env.NODE_ENV === 'development'
-                    ? ['query', 'error', 'warn']
-                    : ['error'],
-          })
-     }
+  private readonly logger = new Logger(PrismaService.name);
 
-     async onModuleInit() {
-          await this.$connect()
-          console.log('Database connected successfully!!')
-     }
+  constructor() {
+    super({
+      log: ['error', 'warn'],
+      datasources: {
+        db: {
+          url: process.env.DATABASE_URL,
+        },
+      },
+    });
+  }
 
-     async onModuleDestroy() {
-          await this.$disconnect()
-          console.log('Database disconnected!!')
-     }
+  async onModuleInit() {
+    let retries = 5;
+    while (retries > 0) {
+      try {
+        await this.$connect();
+        this.logger.log('Database connected successfully');
+        return;
+      } catch (error) {
+        retries--;
+        this.logger.error(`DB connection failed, retries left: ${retries}`);
+        if (retries === 0) throw error;
+        await new Promise((res) => setTimeout(res, 5000));
+      }
+    }
+  }
 
-     async cleanDatabase() {
-          if (process.env.NODE_ENV === 'production') {
-               throw new Error('Cannot clean database')
-          }
-
-          const models = Reflect.ownKeys(this).filter(
-               (key) => typeof key === 'string' && !key.startsWith('_')
-          )
-
-          return Promise.all(
-               models.map((modelKey) => {
-                    if (typeof modelKey === 'string') {
-                         return (this as any)[modelKey].deleteMany()
-                    }
-               })
-          )
-     }
+  async onModuleDestroy() {
+    await this.$disconnect();
+  }
 }
