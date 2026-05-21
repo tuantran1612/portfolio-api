@@ -1,4 +1,3 @@
-# ---- Stage 1: Build ----
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -8,15 +7,12 @@ COPY prisma ./prisma
 
 RUN npm ci
 
-# dummy env so prisma generate doesn't fail at build time
-ENV DATABASE_URL="mongodb+srv://build:build@placeholder.mongodb.net/build"
-
 COPY . .
 
-RUN npx prisma generate
+# Pass as build arg — never baked into the image
+RUN DATABASE_URL="mongodb://placeholder:placeholder@localhost/placeholder" npx prisma generate
 RUN npm run build
 
-# ---- Stage 2: Runner ----
 FROM node:20-alpine AS runner
 
 WORKDIR /app
