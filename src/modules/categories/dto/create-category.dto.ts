@@ -1,5 +1,5 @@
-import { IsString, MinLength } from 'class-validator'
-import { ApiProperty } from '@nestjs/swagger'
+import { IsString, IsOptional, MinLength, Matches } from 'class-validator'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 export class CreateCategoryDto {
   @ApiProperty({ example: 'Frontend' })
@@ -7,8 +7,12 @@ export class CreateCategoryDto {
   @MinLength(2)
   name: string;
 
-  @ApiProperty({ example: 'frontend' })
+  @ApiPropertyOptional({ example: 'frontend' })
+  @IsOptional()
   @IsString()
   @MinLength(2)
-  slug: string;
+  @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+    message: 'Slug must be lowercase letters, numbers and hyphens only',
+  })
+  slug?: string;
 }

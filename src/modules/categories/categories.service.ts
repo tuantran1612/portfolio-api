@@ -1,71 +1,114 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common'
-import { PrismaService } from '../../prisma/prisma.service'
-import { CreateCategoryDto } from './dto/create-category.dto'
-import { UpdateCategoryDto } from './dto/update-category.dto'
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
+import { generateSlug } from '../../common/utils/slug.util';
 
 @Injectable()
 export class CategoriesService {
   constructor(private prisma: PrismaService) {}
 
-  async findAll() {
+  findAll() {
     return this.prisma.category.findMany({
       orderBy: { name: 'asc' },
       include: { _count: { select: { projects: true } } },
-    })
+    });
   }
 
   async findOne(id: string) {
     const category = await this.prisma.category.findUnique({
       where: { id },
       include: { _count: { select: { projects: true } } },
-    })
-    if (!category) throw new NotFoundException(`Category ${id} not found`)
-    return category
+    });
+    if (!category) throw new NotFoundException(`Category ${id} not found`);
+    return category;
   }
 
   async create(dto: CreateCategoryDto) {
-    const existing = await this.prisma.category.findUnique({
-      where: { slug: dto.slug },
-    })
-    if (existing) throw new ConflictException(`Slug "${dto.slug}" already exists`)
+    // use custom slug if provided, otherwise generate from name
+    const baseSlug = dto.slug || generateSlug(dto.name);
+    const slug = await this.resolveSlug(baseSlug);
 
-    return this.prisma.category.create({ data: dto })
+    return this.prisma.category.create({
+      data: { name: dto.name, slug },
+    });
   }
 
   async update(id: string, dto: UpdateCategoryDto) {
-    await this.findOne(id)
-    return this.prisma.category.update({ where: { id }, data: dto })
+    await this.findOne(id);
+
+    const data: { name?: string; slug?: string } = {};
+
+    if (dto.name) data.name = dto.name;
+
+    if (dto.slug) {
+      // custom slug provided — resolve uniqueness
+      data.slug = await this.resolveSlug(dto.slug, id);
+    } else if (dto.name) {
+      // no custom slug but name changed — auto-generate
+      data.slug = await this.resolveSlug(generateSlug(dto.name), id);
+    }
+
+    return this.prisma.category.update({ where: { id }, data });
   }
 
   async remove(id: string) {
-    const category = await this.findOne(id)
+    const category = await this.findOne(id);
+
     if (category._count.projects > 0) {
       throw new ConflictException(
-        `Cannot delete category with ${category._count.projects} projects`
-      )
+        `Cannot delete — ${category._count.projects} project(s) still use this category`,
+      );
     }
-    return this.prisma.category.delete({ where: { id } })
+
+    return this.prisma.category.delete({ where: { id } });
   }
 
   async seed() {
-    const defaults = [
-      { name: 'Frontend', slug: 'frontend' },
-      { name: 'Backend', slug: 'backend' },
-      { name: 'Fullstack', slug: 'fullstack' },
-      { name: 'Mobile', slug: 'mobile' },
-      { name: 'DevOps', slug: 'devops' },
-    ]
+    const defaults = ['Frontend', 'Backend', 'Fullstack', 'Mobile', 'DevOps'];
 
     const results = await Promise.allSettled(
-      defaults.map((cat) =>
-        this.prisma.category.upsert({
-          where: { slug: cat.slug },
+      defaults.map(async (name) => {
+        const slug = generateSlug(name);
+        return this.prisma.category.upsert({
+          where: { slug },
           update: {},
-          create: cat,
-        })
-      )
-    )
+          create: { name, slug },
+        });
+      }),
+    );
 
-    return { message: 'Categories seeded', count: results.length }
+    const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+    return { message: 'Categories seeded', count: succeeded };
+  }
+
+  // --- Slug resolver ---
+  // Generates a unique slug, appending -1, -2 if base slug already exists
+  // Skips currentId to allow updating a category without conflicting with itself
+  private async resolveSlug(base: string, currentId?: string): Promise<string> {
+    let slug = base;
+    let counter = 1;
+
+    while (true) {
+      const existing = await this.prisma.category.findUnique({
+        where: { slug },
+      });
+
+      // no conflict
+      if (!existing) break;
+
+      // conflict is with itself (update case) — keep the slug
+      if (currentId && existing.id === currentId) break;
+
+      // conflict with another category — append counter
+      slug = `${base}-${counter}`;
+      counter++;
+    }
+
+    return slug;
   }
 }
