@@ -7,10 +7,10 @@ import { UpdateProjectDto } from './dto/update-projects.dto';
 export class ProjectsService {
   constructor(private prisma: PrismaService) {}
 
-  findAll(categoryId?: string, featured?: boolean) {
+  findAll(categorySlug?: string, featured?: boolean) {
     return this.prisma.project.findMany({
       where: {
-        ...(categoryId && { categoryId }),
+        ...(categorySlug && { category: { slug: categorySlug } }),
         ...(featured !== undefined && { featured }),
       },
       include: { category: true },

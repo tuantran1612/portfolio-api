@@ -36,12 +36,12 @@ export class ProjectsController {
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({ name: 'featured', required: false, type: Boolean })
   findAll(
-    @Query('categoryId') categoryId?: string,
+    @Query('category') category?: string,
     @Query('featured') featured?: string,
   ) {
     const featuredBool =
       featured === 'true' ? true : featured === 'false' ? false : undefined;
-    return this.projectsService.findAll(categoryId, featuredBool);
+    return this.projectsService.findAll(category, featuredBool);
   }
 
   @Get(':id')
