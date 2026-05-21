@@ -1,43 +1,43 @@
-import { IsString, IsBoolean, IsOptional, IsArray, MinLength } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsBoolean, IsOptional, IsArray, MinLength } from 'class-validator'
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 export class CreateProjectDto {
   @ApiProperty({ example: 'Portfolio Website' })
   @IsString()
   @MinLength(3)
-  title: string;
+  title: string
 
   @ApiProperty({ example: 'A personal portfolio built with Next.js' })
   @IsString()
   @MinLength(10)
-  description: string;
+  description: string
 
-  @ApiProperty({ example: 'Frontend' })
+  @ApiProperty({ example: 'clx1234abcd' })
   @IsString()
-  category: string;
+  categoryId: string
 
   @ApiProperty({ example: ['Next.js', 'TailwindCSS', 'TypeScript'] })
   @IsArray()
   @IsString({ each: true })
-  techStack: string[];
+  techStack: string[]
 
-  @ApiPropertyOptional({ example: 'https://image.url/cover.png' })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  imageUrl?: string;
+  imageUrl?: string
 
-  @ApiPropertyOptional({ example: 'https://myproject.vercel.app' })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  liveUrl?: string;
+  liveUrl?: string
 
-  @ApiPropertyOptional({ example: 'https://github.com/user/repo' })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  repoUrl?: string;
+  repoUrl?: string
 
-  @ApiPropertyOptional({ example: true })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsBoolean()
-  featured?: boolean;
+  featured?: boolean
 }

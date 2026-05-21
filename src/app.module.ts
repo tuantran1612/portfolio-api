@@ -9,6 +9,8 @@ import { ProjectsController } from './modules/projects/projects.controller';
 import { ProjectsModule } from './modules/projects/projects.module';
 import { ContactsModule } from './modules/contacts/contacts.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { CategoriesModule } from './modules/categories/categories.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -17,7 +19,9 @@ import { PrismaModule } from './prisma/prisma.module';
     PrismaModule,
     AuthModule,
     ProjectsModule,
+    CategoriesModule,
     ContactsModule,
+    UsersModule,
   ],
   controllers: [AppController, ProjectsController],
   providers: [AppService, ProjectsService],

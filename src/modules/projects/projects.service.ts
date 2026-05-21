@@ -7,18 +7,22 @@ import { UpdateProjectDto } from './dto/update-projects.dto';
 export class ProjectsService {
   constructor(private prisma: PrismaService) {}
 
-  findAll(category?: string, featured?: boolean) {
+  findAll(categoryId?: string, featured?: boolean) {
     return this.prisma.project.findMany({
       where: {
-        ...(category && { category }),
+        ...(categoryId && { categoryId }),
         ...(featured !== undefined && { featured }),
       },
+      include: { category: true },
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async findOne(id: string) {
-    const project = await this.prisma.project.findUnique({ where: { id } });
+    const project = await this.prisma.project.findUnique({
+      where: { id },
+      include: { category: true },
+    });
     if (!project) throw new NotFoundException(`Project ${id} not found`);
     return project;
   }

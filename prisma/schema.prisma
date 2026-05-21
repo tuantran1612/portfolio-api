@@ -7,11 +7,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  admin
+  staff
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
+  name         String   // required now
   passwordHash String
-  role         String   @default("admin")
+  role         Role     @default(staff)
   createdAt    DateTime @default(now())
 }
 
@@ -19,7 +25,8 @@ model Project {
   id          String   @id @default(cuid())
   title       String
   description String
-  category    String
+  category    Category @relation(fields: [categoryId], references: [id])
+  categoryId  String   // required now
   techStack   String[]
   imageUrl    String?
   liveUrl     String?
@@ -28,6 +35,15 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  projects  Project[]
+}
+
 
 model Contact {
   id        String   @id @default(cuid())

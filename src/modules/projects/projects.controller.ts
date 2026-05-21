@@ -1,9 +1,21 @@
 import {
-  Controller, Get, Post, Patch, Delete,
-  Body, Param, Query, UseGuards, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import {
-  ApiTags, ApiOperation, ApiBearerAuth, ApiQuery,
+  ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-projects.dto';
@@ -18,15 +30,18 @@ export class ProjectsController {
   // --- Public routes ---
 
   @Get()
-  @ApiOperation({ summary: 'Get all projects — supports ?category= and ?featured=' })
+  @ApiOperation({
+    summary: 'Get all projects — supports ?category= and ?featured=',
+  })
   @ApiQuery({ name: 'category', required: false })
   @ApiQuery({ name: 'featured', required: false, type: Boolean })
   findAll(
-    @Query('category') category?: string,
+    @Query('categoryId') categoryId?: string,
     @Query('featured') featured?: string,
   ) {
-    const featuredBool = featured === 'true' ? true : featured === 'false' ? false : undefined;
-    return this.projectsService.findAll(category, featuredBool);
+    const featuredBool =
+      featured === 'true' ? true : featured === 'false' ? false : undefined;
+    return this.projectsService.findAll(categoryId, featuredBool);
   }
 
   @Get(':id')
