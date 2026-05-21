@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "Syncing Prisma schema..."
-npx prisma db push --accept-data-loss
+echo "Running Prisma migrations..."
+npx prisma migrate deploy
 echo "Starting API..."
 node dist/main

@@ -9,7 +9,7 @@ RUN npm ci
 
 COPY . .
 
-RUN DATABASE_URL="mongodb://placeholder:placeholder@localhost/placeholder" npx prisma generate
+RUN DATABASE_URL="postgresql://placeholder:placeholder@localhost/placeholder" npx prisma generate
 RUN npm run build
 
 FROM node:20-alpine AS runner
