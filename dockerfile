@@ -9,7 +9,6 @@ RUN npm ci
 
 COPY . .
 
-# Pass as build arg — never baked into the image
 RUN DATABASE_URL="mongodb://placeholder:placeholder@localhost/placeholder" npx prisma generate
 RUN npm run build
 
