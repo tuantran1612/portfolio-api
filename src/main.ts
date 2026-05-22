@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import helmet from 'helmet';
 import { RolesGuard } from './common/guards/role.guard';
+import { json, urlencoded } from 'express';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(
@@ -29,9 +30,19 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
-      // allow requests with no origin (mobile apps, curl, Postman)
+      // allow requests with no origin (Postman, curl, Swagger)
       if (!origin) return callback(null, true);
+
+      // allow localhost in development
+      if (
+        process.env.NODE_ENV !== 'production' &&
+        origin.startsWith('http://localhost')
+      ) {
+        return callback(null, true);
+      }
+
       if (allowedOrigins.includes(origin)) return callback(null, true);
+
       callback(new Error(`CORS blocked: ${origin}`));
     },
     credentials: true,
@@ -59,6 +70,8 @@ async function bootstrap() {
   if (!jwtSecret || jwtSecret.length < 32) {
     throw new Error('JWT_SECRET must be at least 32 characters long');
   }
+  app.use(json({ limit: '10mb' }));
+  app.use(urlencoded({ extended: true, limit: '10mb' }));
   const port = process.env.PORT || 3001;
   await app.listen(port);
   console.log(`API running on http://localhost:${port}`);

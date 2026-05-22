@@ -12,6 +12,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { UsersModule } from './modules/users/users.module';
 import { APP_GUARD } from '@nestjs/core';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { APP_GUARD } from '@nestjs/core';
     CategoriesModule,
     ContactsModule,
     UsersModule,
+    UploadModule,
   ],
   controllers: [AppController, ProjectsController],
   providers: [
