@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 import helmet from 'helmet';
 import { RolesGuard } from './common/guards/role.guard';
 import { json, urlencoded } from 'express';
+import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(
@@ -56,6 +57,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.useGlobalFilters(new GlobalExceptionFilter())
+
   app.setGlobalPrefix('api');
   const config = new DocumentBuilder()
     .setTitle('Portfolio API')
