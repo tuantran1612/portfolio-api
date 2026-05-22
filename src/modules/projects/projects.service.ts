@@ -2,10 +2,10 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-projects.dto';
 import { UpdateProjectDto } from './dto/update-projects.dto';
-
+import { RevalidateService } from '../../common/services/revalidate.service'
 @Injectable()
 export class ProjectsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService,private revalidate: RevalidateService,) {}
 
   findAll(categorySlug?: string, featured?: boolean) {
     return this.prisma.project.findMany({
@@ -27,17 +27,30 @@ export class ProjectsService {
     return project;
   }
 
-  create(dto: CreateProjectDto) {
-    return this.prisma.project.create({ data: dto });
+  async create(dto: CreateProjectDto) {
+    const project = await this.prisma.project.create({
+      data: dto,
+      include: { category: true },
+    })
+    await this.revalidate.revalidate('/', '/projects')
+    return project
   }
 
   async update(id: string, dto: UpdateProjectDto) {
-    await this.findOne(id);
-    return this.prisma.project.update({ where: { id }, data: dto });
+    await this.findOne(id)
+    const project = await this.prisma.project.update({
+      where: { id },
+      data: dto,
+      include: { category: true },
+    })
+    await this.revalidate.revalidate('/', '/projects')
+    return project
   }
 
   async remove(id: string) {
-    await this.findOne(id);
-    return this.prisma.project.delete({ where: { id } });
+    await this.findOne(id)
+    const project = await this.prisma.project.delete({ where: { id } })
+    await this.revalidate.revalidate('/', '/projects')
+    return project
   }
 }

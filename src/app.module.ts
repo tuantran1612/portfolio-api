@@ -13,6 +13,7 @@ import { CategoriesModule } from './modules/categories/categories.module';
 import { UsersModule } from './modules/users/users.module';
 import { APP_GUARD } from '@nestjs/core';
 import { UploadModule } from './modules/upload/upload.module';
+import { RevalidateService } from './common/services/revalidate.service'
 
 @Module({
   imports: [
@@ -31,15 +32,18 @@ import { UploadModule } from './modules/upload/upload.module';
     ContactsModule,
     UsersModule,
     UploadModule,
+    
   ],
   controllers: [AppController, ProjectsController],
   providers: [
     AppService,
     ProjectsService,
+    RevalidateService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
   ],
+  exports: [RevalidateService],
 })
 export class AppModule {}
