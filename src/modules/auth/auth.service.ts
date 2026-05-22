@@ -15,53 +15,32 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
   ) {}
-//   Function Login
+  //   Function Login
   async login(dto: LoginDto) {
-  const user = await this.prisma.user.findUnique({
-    where: { email: dto.email },
-  })
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
 
-  if (!user) throw new UnauthorizedException('Invalid credentials')
+    if (!user) throw new UnauthorizedException('Invalid credentials');
 
-  const isMatch = await bcrypt.compare(dto.password, user.passwordHash)
-  if (!isMatch) throw new UnauthorizedException('Invalid credentials')
+    const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
+    if (!isMatch) throw new UnauthorizedException('Invalid credentials');
 
-  const token = this.jwtService.sign({
-    sub: user.id,
-    email: user.email,
-    role: user.role,
-    name: user.name,
-  })
-
-  return {
-    access_token: token,
-    user: {
-      id: user.id,
-      name: user.name,
+    const token = this.jwtService.sign({
+      sub: user.id,
       email: user.email,
       role: user.role,
-    },
+      name: user.name,
+    });
+
+    return {
+      access_token: token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    };
   }
-}
-
-  async seedAdmin() {
-  const existing = await this.prisma.user.findUnique({
-    where: { email: 'superadmin@portfolio.com' },
-  })
-
-  if (existing) return { message: 'Admin already exists' }
-
-  const passwordHash = await bcrypt.hash('admin123456', 10)
-
-  const user = await this.prisma.user.create({
-    data: {
-      name: 'Tuan Tran',
-      email: 'superadmin@portfolio.com',
-      passwordHash,
-      role: 'admin',
-    },
-  })
-
-  return { message: 'Admin created', email: user.email }
-}
 }

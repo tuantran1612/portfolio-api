@@ -21,6 +21,9 @@ import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-projects.dto';
 import { UpdateProjectDto } from './dto/update-projects.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt.guard';
+import { SkipThrottle } from '@nestjs/throttler';
+import { RolesGuard } from '../../common/guards/role.guard';
+import { Roles } from '../../common/decorators/role.decorators';
 
 @ApiTags('Projects')
 @Controller('projects')
@@ -28,7 +31,7 @@ export class ProjectsController {
   constructor(private projectsService: ProjectsService) {}
 
   // --- Public routes ---
-
+  @SkipThrottle()
   @Get()
   @ApiOperation({
     summary: 'Get all projects — supports ?category= and ?featured=',
@@ -43,7 +46,8 @@ export class ProjectsController {
       featured === 'true' ? true : featured === 'false' ? false : undefined;
     return this.projectsService.findAll(category, featuredBool);
   }
-
+  // Find by id
+  @SkipThrottle()
   @Get(':id')
   @ApiOperation({ summary: 'Get single project by id' })
   findOne(@Param('id') id: string) {
@@ -53,7 +57,8 @@ export class ProjectsController {
   // --- Admin routes (JWT protected) ---
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'staff')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create project — admin only' })
   create(@Body() dto: CreateProjectDto) {
@@ -61,7 +66,8 @@ export class ProjectsController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'staff')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update project — admin only' })
   update(@Param('id') id: string, @Body() dto: UpdateProjectDto) {
@@ -69,7 +75,8 @@ export class ProjectsController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'staff')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete project — admin only' })

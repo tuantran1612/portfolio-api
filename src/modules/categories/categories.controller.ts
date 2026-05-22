@@ -7,6 +7,8 @@ import { CategoriesService } from './categories.service'
 import { CreateCategoryDto } from './dto/create-category.dto'
 import { UpdateCategoryDto } from './dto/update-category.dto'
 import { JwtAuthGuard } from '../../common/guards/jwt.guard'
+import { RolesGuard } from '../../common/guards/role.guard'
+import { Roles } from '../../common/decorators/role.decorators'
 
 @ApiTags('Categories')
 @Controller('categories')
@@ -30,7 +32,8 @@ export class CategoriesController {
   // --- Admin routes ---
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard,RolesGuard)
+  @Roles('admin','staff')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create category — admin only' })
   create(@Body() dto: CreateCategoryDto) {
@@ -38,7 +41,8 @@ export class CategoriesController {
   }
 
   @Post('seed')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard,RolesGuard)
+  @Roles('admin','staff')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Seed default categories — admin only' })
@@ -47,7 +51,8 @@ export class CategoriesController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard,RolesGuard)
+  @Roles('admin','staff')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update category — admin only' })
   update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
@@ -55,7 +60,8 @@ export class CategoriesController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard,RolesGuard)
+  @Roles('admin','staff')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete category — admin only' })

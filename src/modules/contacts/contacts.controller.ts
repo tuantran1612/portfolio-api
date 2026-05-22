@@ -1,11 +1,21 @@
 import {
-  Controller, Get, Post, Patch, Delete,
-  Body, Param, UseGuards, HttpCode, HttpStatus,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  UseGuards,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ContactsService } from './contacts.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt.guard';
+import { Roles } from '../../common/decorators/role.decorators';
+import { RolesGuard } from '../../common/guards/role.guard';
 
 @ApiTags('Contacts')
 @Controller('contacts')
@@ -24,7 +34,8 @@ export class ContactsController {
   // --- Admin routes (JWT protected) ---
 
   @Get()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'staff')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all contact submissions — admin only' })
   findAll() {
@@ -32,7 +43,8 @@ export class ContactsController {
   }
 
   @Patch(':id/read')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'staff')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Mark contact as read — admin only' })
   markAsRead(@Param('id') id: string) {
@@ -40,7 +52,8 @@ export class ContactsController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'staff')
   @ApiBearerAuth()
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Delete contact submission — admin only' })
