@@ -15,7 +15,7 @@ enum Role {
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
-  name         String   // required now
+  name         String // required now
   passwordHash String
   role         Role     @default(staff)
   createdAt    DateTime @default(now())
@@ -24,9 +24,11 @@ model User {
 model Project {
   id          String   @id @default(cuid())
   title       String
+  slug        String   @unique
   description String
+  content     String?
   category    Category @relation(fields: [categoryId], references: [id])
-  categoryId  String   // required now
+  categoryId  String
   techStack   String[]
   imageUrl    String?
   liveUrl     String?
@@ -43,7 +45,6 @@ model Category {
   createdAt DateTime  @default(now())
   projects  Project[]
 }
-
 
 model Contact {
   id        String   @id @default(cuid())

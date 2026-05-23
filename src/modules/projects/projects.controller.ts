@@ -31,8 +31,9 @@ export class ProjectsController {
   constructor(private projectsService: ProjectsService) {}
 
   // --- Public routes ---
-  @SkipThrottle()
+
   @Get()
+  @SkipThrottle()
   @ApiOperation({
     summary: 'Get all projects — supports ?category= and ?featured=',
   })
@@ -47,13 +48,20 @@ export class ProjectsController {
     return this.projectsService.findAll(category, featuredBool);
   }
   // Find by id
-  @SkipThrottle()
+
   @Get(':id')
+  @SkipThrottle()
   @ApiOperation({ summary: 'Get single project by id' })
   findOne(@Param('id') id: string) {
     return this.projectsService.findOne(id);
   }
 
+  @Get('slug/:slug')
+  @SkipThrottle()
+  @ApiOperation({ summary: 'Get project by slug — public' })
+  findBySlug(@Param('slug') slug: string) {
+    return this.projectsService.findBySlug(slug);
+  }
   // --- Admin routes (JWT protected) ---
 
   @Post()
