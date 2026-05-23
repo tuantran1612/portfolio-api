@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../../prisma/prisma.service'
-import { CreateProjectDto } from './dto/create-project.dto'
-import { UpdateProjectDto } from './dto/update-project.dto'
+import { CreateProjectDto } from './dto/create-projects.dto'
+import { UpdateProjectDto } from './dto/update-projects.dto'
 import { RevalidateService } from '../../common/services/revalidate.service'
-import { generateSlug } from '../../common/utils/slug.util'
+import { generateSlug } from '../../common/utils/slug.utils'
 
 @Injectable()
 export class ProjectsService {
